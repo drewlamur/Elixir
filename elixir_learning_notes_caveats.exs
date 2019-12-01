@@ -217,6 +217,8 @@ end
 
 # storing the returned anonymous function as pinner,
 # assembles an environment that remembers 1
+# example of how anonymous functions use pattern matching
+# to bind their parameter list to passed arguments
 pinner = PinningEx.pinner(1)
 IO.puts pinner.(1)
 IO.puts pinner.(2)
@@ -240,12 +242,31 @@ getMultiples = ProblemOne.getMultiples
 # sums the list
 IO.puts Enum.sum(getMultiples) # 233168
 
-###############################################
-## --- Programming Elixir Book Exercises --- ##
-###############################################
+# & operator, capturing anonymous functions
+# the & operator captures expressions as functions 
+# &1, &2, etc. represents params 1, 2, etc.
+find_odds = fn numbers -> 
+  Enum.reject(numbers, &(rem(&1,2) === 0))
+  # ^^ shorhand and same as...
+  # fn numbers -> 
+  #   Enum.reject(numbers, fn x -> 
+  #     rem(x,2) === 0 
+  #   end)
+  # end 
+end
+IO.inspect Enum.to_list 1..100 |> find_odds.()
+
+# note: nested captures via '&' are not allowed
+# e.g. &(Enum.reject(&1, &(rem(&1,2) === 0)))
+
+##########################################
+## --- Programming Elixir Exercises --- ##
+##########################################
 
 # puts anon func
 puts = fn (a) -> IO.puts a end
+# inspect anon func
+inspect = fn (a) -> IO.inspect a end
 
 # FizzBuzz - no conditional logic (instead pattern matching)
 fizzbuzz = fn
@@ -281,3 +302,34 @@ end
 one = prefix.("one,")
 puts.(one.("two"))
 puts.(prefix.("one,").("two"))
+
+# Enum.map [1,2,3,4], fn x -> x + 2 end
+inspect.(Enum.map [1,2,3,4], &(&1 + 2))
+# Enum.each [1,2,3,4], fn x -> IO.inspect x end
+Enum.each [1,2,3,4], &(IO.inspect &1)
+
+# original syntax, non do..end block
+defmodule Times do
+  def double(n), do: n * 2
+  def triple(n), do: n * 3
+  def quadruple(n), do: double(n) * 2
+end
+
+# compiling a module example
+
+# pi@raspberrypi:~/Documents/elixir$ iex times.esx 
+# Erlang/OTP 22 [erts-10.4] [source] [smp:4:4] [ds:4:4:10] [async-threads:1] [hipe]
+
+# Interactive Elixir (1.9.4) - press Ctrl+C to exit (type h() ENTER for help)
+# iex(1)> Times.triple(2)
+# 6
+
+# ---- or ----
+
+# iex(1)> c "times.esx"
+# [Times]
+# iex(2)> Times.quadruple(3)
+
+IO.puts Times.double(2)
+IO.puts Times.triple(2)
+IO.puts Times.quadruple(2)
