@@ -18,7 +18,7 @@ defmodule FirstModule do
   # concatenation & interpolation create a copy of the binary
   # building IO data using a list saves on memory
   def build_io_data(param) do
-	  ["Hello ",param,"!"] 	
+    ["Hello ",param,"!"]  
   end
 end
 
@@ -35,14 +35,14 @@ defmodule RockyBalboa do
     for num <- nums do
       cond do
         rem(num,3) === 0 && rem(num,5) === 0 ->
-    	  IO.puts "cuff_and_link"
-    	rem(num,3) === 0 ->
-    	  IO.puts "cuff"
-    	rem(num,5) === 0 ->
-    	  IO.puts "link"
-    	true ->
-    	  IO.puts num
-    	end
+        IO.puts "cuff_and_link"
+      rem(num,3) === 0 ->
+        IO.puts "cuff"
+      rem(num,5) === 0 ->
+        IO.puts "link"
+      true ->
+        IO.puts num
+      end
     end
   end
 end
@@ -52,7 +52,7 @@ RockyBalboa.cuff_and_link(100)
 # anonymous functions
 defmodule AnonFunctionsEx do
   def exec_anon_funcs do
-    # ++ combine arrays
+    # ++ combine lists
     combine_list = fn (a,b) -> a ++ b end
     # the dot on the call is required which
     # denotes an anonymous function call
@@ -163,7 +163,7 @@ ClosureEx.even_more_closures
 
 # basic binary search tree
 # example of multi clause functions (same arity)
-# good example of param/arg pattern matching
+# good example of param/arg pattern matching & recursion
 defmodule BST do
   def node(data) do
     %{data: data, left: nil, right: nil}
@@ -182,14 +182,70 @@ defmodule BST do
       %{tree | right: insert(tree.right, data)}
     end
   end
+
+  def search(tree, data) do
+    cond do
+      data < tree.data ->
+        if tree.left == nil do
+          IO.puts "Data #{data} was not found!"
+        else
+          search(tree.left, data)
+        end
+      data > tree.data ->
+        if tree.right == nil do
+          IO.puts "Data #{data} was not found!"
+        else
+          search(tree.right, data)
+        end
+      true ->
+        IO.puts "Data #{data} was found!"
+    end
+  end
+
+  def preorder(tree) do
+    if tree != nil do
+      IO.puts tree.data
+      preorder(tree.left)
+      preorder(tree.right)
+    end
+  end
+
+  def inorder(tree) do
+    if tree != nil do
+      inorder(tree.left)
+      IO.puts tree.data
+      inorder(tree.right)
+    end
+  end
+
+    def postorder(tree) do
+    if tree != nil do
+      postorder(tree.left)
+      postorder(tree.right)
+      IO.puts tree.data
+    end
+  end
 end
 
-tree = BST.node(4) 
-      |> BST.insert(2) 
-      |> BST.insert(26)
+tree = BST.node(12) 
+      |> BST.insert(3) 
       |> BST.insert(6)
+      |> BST.insert(14)
+      |> BST.insert(4) 
+      |> BST.insert(7)
+      |> BST.insert(8)
 
 IO.inspect tree
+
+IO.puts BST.search(tree,3)  # found
+IO.puts BST.search(tree,4)  # found
+IO.puts BST.search(tree,24) # not found
+IO.puts BST.search(tree,16) # not found
+IO.puts BST.search(tree,6)  # found
+
+BST.preorder(tree)
+BST.inorder(tree)
+BST.postorder(tree)
 
 # use the pin operator (^) when you want to 
 # pattern match against an existing variable’s 
@@ -206,7 +262,7 @@ defmodule PinningEx do
     a = 1
     b = 2
     # pattern match b pinned (no rebinding)
-    # {^b,a} = {1,1} # match error (b pinned as 2) 
+    # >> {^b,a} = {1,1} # match error (b pinned as 2) 
     # pattern match b pinned (no rebinding)
     IO.inspect {^b,^a} = {2,1} 
     # pattern match b (rebind b to 3)
@@ -258,6 +314,138 @@ IO.inspect Enum.to_list 1..100 |> find_odds.()
 
 # note: nested captures via '&' are not allowed
 # e.g. &(Enum.reject(&1, &(rem(&1,2) === 0)))
+
+# syntax to denote default params is 'identifier + \\ value'
+defmodule ParamsEx do
+  def testFunc(param1 \\ 1, param2, param3) do
+    { param1, param2, param3 } 
+  end
+end
+
+# in elixir, <func-name>/<arity> denotes the number of arguments
+# above, testFunc can called as either testFunc/2 or testFunc/3
+# where no matching takes place when called as testFunc/2
+# 2 & 3 are assigned to the non defaults: param2, param3
+IO.inspect ParamsEx.testFunc(2, 3)
+# when the number of arguments passed matches whats defined 
+# e.g. testFunc is called as testFunc/3
+# positionally, each is assigned the value passed (left to right)
+IO.inspect ParamsEx.testFunc(2,3,4)
+
+# note: calling testFunc as testFunc/1 (less) or testFunc/4 (more)
+# would result is an UndefinedFunctionError exception
+# must be called as either testFunc/2 or testFunc/3 
+# e.g. IO.inspect ParamsEx.testFunc(2)
+# e.g. IO.inspect ParamsEx.testFunc(2,3,4,5)
+
+# simple guard clauses w/predicates
+defmodule GC do
+  # clause 1
+  def check_it(a) when is_binary(a) and a === "ABC123" do
+    "not a letter, but is #{a}!"
+  end
+  
+  # clause 2
+  def check_it(a) when is_binary(a) and a === "A" do
+    "#{a} is the letter of the day!"
+  end
+
+  # clause 3
+  def check_it(a) when is_integer(a) and a > 0 do
+    "is integer #{a}, which is > 0"
+  end
+end
+
+IO.puts GC.check_it("A")
+IO.puts GC.check_it(39)
+IO.puts GC.check_it("ABC123")
+
+# more guard clauses w/predicates
+# b search - the functional way
+# series of the same functions w/predicates
+# uses recursion to cycle each func & predicate
+# executes code when there is clause match
+defmodule BSearch do
+  # clause 1
+  def search(target, low..high) when div(low + high, 2) > target do
+    search(target, low..div(low + high, 2))
+  end
+
+  # clause 2
+  def search(target, low..high) when div(low + high, 2) < target do
+    search(target, div(low + high, 2)..high)
+  end
+
+  # clause 3
+  def search(target, low..high) do 
+    IO.puts div(low + high, 2)
+  end
+end
+
+IO.puts BSearch.search(392, 1..1000)
+IO.puts BSearch.search(16, 1..1000)
+IO.puts BSearch.search(167, 1..1000)
+
+# b search, python
+
+# >>> lst = list(range(1,1001))
+
+# >>> def b_search(lst,target):
+# ...   start_idx = 0
+# ...   end_idx = len(lst)-1
+# ...   found = False
+# ...   while (found is not True):
+# ...     mid_pt = (start_idx+end_idx)//2
+# ...     if lst[mid_pt] == target:
+# ...       found = True
+# ...     elif lst[mid_pt] > target:
+# ...       end_idx = lst[mid_pt]
+# ...     else:
+# ...       start_idx = lst[mid_pt]
+# ...   print(lst[mid_pt])
+# ... 
+# >>> b_search(lst,392)
+# 392
+# >>> b_search(lst,292)
+# 292
+# >>> b_search(lst,14)
+# 14
+# >>> b_search(lst,145)
+# 145
+
+# b search, ruby
+
+# irb(main):003:0> arr = (1..1000).to_a
+
+# irb(main):004:0> def b_search(arr, target)
+# irb(main):005:1>   start_idx = 0
+# irb(main):006:1>   end_idx = arr.size - 1
+# irb(main):007:1>   found = false
+# irb(main):008:1>   until found
+# irb(main):009:2>     mid_pt = (start_idx + end_idx)/2
+# irb(main):010:2>     if arr[mid_pt] == target
+# irb(main):011:3>       found = true
+# irb(main):012:3>     elsif arr[mid_pt] > target
+# irb(main):013:3>       end_idx = arr[mid_pt]
+# irb(main):014:3>     else
+# irb(main):015:3>       start_idx = arr[mid_pt]
+# irb(main):016:3>     end
+# irb(main):017:2>   end
+# irb(main):018:1>   puts arr[mid_pt]
+# irb(main):019:1> end
+# => :b_search
+# irb(main):020:0> b_search(arr, 392)
+# 392
+# => nil
+# irb(main):021:0> b_search(arr, 292)
+# 292
+# => nil
+# irb(main):022:0> b_search(arr, 14)
+# 14
+# => nil
+# irb(main):023:0> b_search(arr, 145)
+# 145
+# => nil
 
 ##########################################
 ## --- Programming Elixir Exercises --- ##
@@ -315,6 +503,10 @@ defmodule Times do
   def quadruple(n), do: double(n) * 2
 end
 
+puts.(Times.double(2))
+puts.(Times.triple(2))
+puts.(Times.quadruple(2))
+
 # compiling a module example
 
 # pi@raspberrypi:~/Documents/elixir$ iex times.esx 
@@ -330,6 +522,48 @@ end
 # [Times]
 # iex(2)> Times.quadruple(3)
 
-IO.puts Times.double(2)
-IO.puts Times.triple(2)
-IO.puts Times.quadruple(2)
+defmodule SumModule do
+  def sum(0), do: 0
+  def sum(n), do: n + sum(n - 1)
+end
+
+puts.(SumModule.sum(5))
+puts.(SumModule.sum(10))
+puts.(SumModule.sum(15))
+puts.(SumModule.sum(20))
+puts.(SumModule.sum(25))
+
+# another way functionally (w/o recursion), is...
+
+defmodule SumModuleTakeTwo do
+  def sum(n), do: Enum.sum(Enum.to_list 1..n)
+end
+
+puts.(SumModuleTakeTwo.sum(25))
+
+defmodule Calculate do
+  def gcd(x,0), do: x
+  def gcd(x,y), do: gcd(y,rem(x,y))
+end
+
+puts.(Calculate.gcd(2,4))
+puts.(Calculate.gcd(4,6))
+puts.(Calculate.gcd(8,12))
+
+defmodule Chop do
+  def guess(number, low..high) when div(low + high, 2) > number do
+    IO.puts "It is #{div(low + high, 2)}"
+    guess(number, low..div(low + high, 2))
+  end
+
+  def guess(number, low..high) when div(low + high, 2) < number do
+    IO.puts "It is #{div(low + high, 2)}"
+    guess(number, div(low + high, 2)..high)
+  end
+
+  def guess(number, low..high) do 
+    IO.puts div(low + high, 2)
+  end
+end
+
+Chop.guess(273, 1..1000)
