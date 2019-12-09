@@ -447,6 +447,30 @@ IO.puts BSearch.search(167, 1..1000)
 # 145
 # => nil
 
+# private function example
+defmodule Numbers do
+  defp double_it(n) do
+    n * 2
+  end
+  def times_two(n) do
+    double_it(n)
+  end
+end
+
+IO.puts Numbers.times_two(4) # 8
+# IO.puts Numbers.double_it(4) 
+# ^^ error: function Numbers.double_it/1 is private
+
+# note: you can define multiple private functions 
+# of the same name, as you can public functions 
+# however, you can't define private 
+# and public functions with the same name 
+# e.g. - >
+# defmodule Testing
+#   defp test(n), do: IO.puts n 
+#   def  test(n), do: IO.puts n 
+# end
+
 ##########################################
 ## --- Programming Elixir Exercises --- ##
 ##########################################
