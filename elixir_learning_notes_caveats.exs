@@ -24,6 +24,10 @@ end
 
 FirstModule.do_str_stuff("world")
 
+# single quoted strings represent a 
+# list of character codes
+Enum.each('abcdefghijklmnopqrstuvwxyz', fn x -> IO.puts x end)
+
 # ranges, range to list, condition block
 defmodule RockyBalboa do
   def cuff_and_link(max_num) do
@@ -471,6 +475,100 @@ IO.puts Numbers.times_two(4) # 8
 #   def  test(n), do: IO.puts n 
 # end
 
+# lists, head | tail
+# elixir lists are essentially linked lists,
+# pairs containing the head and the tail of a list
+# where the head is the first element,
+# and the tail would be the remaining elements
+# iex> [head | tail] = [1, 2, 3] 
+# [1, 2, 3]
+# iex> head
+# 1
+# iex> tail 
+# [2, 3]
+
+# using pattern matching to split a
+# list to it's head and it's tail
+list = [1,2,3]
+[a | b] = list
+# first el (head)
+IO.puts a
+# remaining els (tail)
+IO.inspect b
+
+# using pattern matching to operate on 
+# each element of the list
+list = [1,2,3]
+[head | tail] = list # [1 | [2,3]]
+IO.puts head
+IO.inspect tail
+# head is now the next el
+[head | tail] = tail # [2 | [3]]
+IO.puts head
+IO.inspect tail
+# head is now the next el
+[head | tail] = tail # [3 | []]
+IO.puts head
+IO.inspect tail
+
+# recursive sum using head and tail
+# [] would represent the base case
+defmodule Math do
+  def sum([]), do: 0
+  def sum([head | tail]) do
+    head + sum(tail)
+  end
+end
+
+IO.puts Math.sum([1,2,3,4,5])
+
+# using reduce
+defmodule Math do
+  def sum(list) do
+    Enum.reduce(list, fn el, acc -> (el + acc) end)
+  end
+end
+
+IO.puts Math.sum([1,2,3,4,5])
+
+# using reduce, w/starting pt @ 2
+defmodule Math do
+  def sum(list) do
+    Enum.reduce(list, 2, fn el, acc -> (el + acc) end)
+  end
+end
+
+IO.puts Math.sum([1,2,3,4,5])
+
+# shorthand
+defmodule Math do
+  def sum(list), do: Enum.reduce(list, &(&1 + &2))
+end
+
+IO.puts Math.sum([1,2,3,4,5])
+
+# map example
+defmodule AList do
+  def map([], _), do: []
+  def map([head | tail], func) do
+    [func.(head) | map(tail, func)]
+  end
+end
+
+IO.inspect AList.map [2,4,6], fn x -> x * x end
+IO.inspect AList.map [2,4,6], &(&1 * &1)
+
+# reduce example
+defmodule AList do
+  def reduce([], val, _), do: val
+  def reduce([head | tail], val, func) do
+    reduce(tail, func.(val, head), func)
+  end
+end
+
+IO.puts AList.reduce [4,5,6], 0, fn x, y -> x + y end
+IO.puts AList.reduce [4,5,6], 0, &(&1 + &2)
+
 ##########################################
 ## --- Programming Elixir Exercises --- ##
 ##########################################
@@ -591,3 +689,75 @@ defmodule Chop do
 end
 
 Chop.guess(273, 1..1000)
+
+IO.puts :erlang.float_to_binary(100.00, decimals: 2)
+
+IO.puts System.get_env("HOME")
+
+defmodule FileExt do
+  def getFileExt1 do
+    System.cmd("ls", []) |> 
+    Tuple.to_list() |> 
+    Enum.at(0) |> 
+    String.split(".") |> 
+    Enum.at(-1) |>
+    String.replace("\n","")
+  end
+
+  def getFileExt2 do 
+    File.ls(".") |> 
+    Tuple.to_list() |> 
+    Enum.at(-1) |> 
+    Enum.at(0) |> 
+    String.split(".") |> 
+    Enum.at(-1)
+  end
+end
+
+IO.puts FileExt.getFileExt1
+IO.puts FileExt.getFileExt2
+
+IO.puts System.cwd
+
+IO.inspect System.cmd("ls", [])
+
+defmodule Map do
+  def mapsum([], val, _), do: val
+  def mapsum([head | tail], val, func) do
+    mapsum(tail, func.(val, head), func)
+  end
+end
+
+IO.puts Map.mapsum [1,2,3], 0, fn x, y -> x + y end
+IO.puts Map.mapsum [1,2,3], 0, &(&1 + &2)
+
+defmodule Map do
+  def max([], max, _), do: max 
+  def max([head | tail], max, func) do
+    max(tail, func.(max, head), func)
+  end
+end
+
+IO.puts Map.max [1,2,3], 0, 
+fn x, y -> 
+  if x > y do x else y end
+end
+
+IO.puts Map.max [14,62,93,94,23,46,-96], 0, 
+fn x, y -> 
+  if x > y do x else y end
+end
+
+defmodule MyList do
+  def caesar([], _), do: []
+  def caesar([head | tail], n) do
+    [add(head, n) | caesar(tail, n)]
+  end
+
+  def add(char, n) when char + n > 122 do
+    (char + n) - 26
+  end
+  def add(char, n), do: char + n
+end
+
+IO.inspect MyList.caesar('ryvkve', 13)
