@@ -271,6 +271,7 @@ defmodule PinningEx do
     IO.inspect {^b,^a} = {2,1} 
     # pattern match b (rebind b to 3)
     IO.inspect {b,a} = {3,1}
+    IO.puts("a is #{a}")
     IO.puts("b is now #{b}")
   end
 end
@@ -381,7 +382,7 @@ defmodule BSearch do
   end
 
   # clause 3
-  def search(target, low..high) do 
+  def search(_, low..high) do 
     IO.puts div(low + high, 2)
   end
 end
@@ -513,61 +514,61 @@ IO.inspect tail
 
 # recursive sum using head and tail
 # [] would represent the base case
-defmodule Math do
+defmodule Math1 do
   def sum([]), do: 0
   def sum([head | tail]) do
     head + sum(tail)
   end
 end
 
-IO.puts Math.sum([1,2,3,4,5])
+IO.puts Math1.sum([1,2,3,4,5])
 
 # using reduce
-defmodule Math do
+defmodule Math2 do
   def sum(list) do
     Enum.reduce(list, fn el, acc -> (el + acc) end)
   end
 end
 
-IO.puts Math.sum([1,2,3,4,5])
+IO.puts Math2.sum([1,2,3,4,5])
 
 # using reduce, w/starting pt @ 2
-defmodule Math do
+defmodule Math3 do
   def sum(list) do
     Enum.reduce(list, 2, fn el, acc -> (el + acc) end)
   end
 end
 
-IO.puts Math.sum([1,2,3,4,5])
+IO.puts Math3.sum([1,2,3,4,5])
 
 # shorthand
-defmodule Math do
+defmodule Math4 do
   def sum(list), do: Enum.reduce(list, &(&1 + &2))
 end
 
-IO.puts Math.sum([1,2,3,4,5])
+IO.puts Math4.sum([1,2,3,4,5])
 
 # map example
-defmodule AList do
+defmodule AList1 do
   def map([], _), do: []
   def map([head | tail], func) do
     [func.(head) | map(tail, func)]
   end
 end
 
-IO.inspect AList.map [2,4,6], fn x -> x * x end
-IO.inspect AList.map [2,4,6], &(&1 * &1)
+IO.inspect AList1.map [2,4,6], fn x -> x * x end
+IO.inspect AList1.map [2,4,6], &(&1 * &1)
 
 # reduce example
-defmodule AList do
+defmodule AList2 do
   def reduce([], val, _), do: val
   def reduce([head | tail], val, func) do
     reduce(tail, func.(val, head), func)
   end
 end
 
-IO.puts AList.reduce [4,5,6], 0, fn x, y -> x + y end
-IO.puts AList.reduce [4,5,6], 0, &(&1 + &2)
+IO.puts AList2.reduce [4,5,6], 0, fn x, y -> x + y end
+IO.puts AList2.reduce [4,5,6], 0, &(&1 + &2)
 
 ##########################################
 ## --- Programming Elixir Exercises --- ##
@@ -683,7 +684,7 @@ defmodule Chop do
     guess(number, div(low + high, 2)..high)
   end
 
-  def guess(number, low..high) do 
+  def guess(_, low..high) do 
     IO.puts div(low + high, 2)
   end
 end
@@ -721,29 +722,26 @@ IO.inspect File.cwd
 
 IO.inspect System.cmd("ls", [])
 
-defmodule Map do
+defmodule Mapper do
   def mapsum([], val, _), do: val
   def mapsum([head | tail], val, func) do
     mapsum(tail, func.(val, head), func)
   end
-end
-
-IO.puts Map.mapsum [1,2,3], 0, fn x, y -> x + y end
-IO.puts Map.mapsum [1,2,3], 0, &(&1 + &2)
-
-defmodule Map do
   def max([], max, _), do: max 
   def max([head | tail], max, func) do
     max(tail, func.(max, head), func)
   end
 end
 
-IO.puts Map.max [1,2,3], 0, 
+IO.puts Mapper.mapsum [1,2,3], 0, fn x, y -> x + y end
+IO.puts Mapper.mapsum [1,2,3], 0, &(&1 + &2)
+
+IO.puts Mapper.max [1,2,3], 0, 
 fn x, y -> 
   if x > y do x else y end
 end
 
-IO.puts Map.max [14,62,93,94,23,46,-96], 0, 
+IO.puts Mapper.max [14,62,93,94,23,46,-96], 0, 
 fn x, y -> 
   if x > y do x else y end
 end
