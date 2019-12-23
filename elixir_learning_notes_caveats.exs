@@ -717,7 +717,7 @@ end
 IO.puts FileExt.getFileExt1
 IO.puts FileExt.getFileExt2
 
-IO.puts System.cwd
+IO.inspect File.cwd
 
 IO.inspect System.cmd("ls", [])
 
